@@ -1,0 +1,369 @@
+basePath: /api/v1
+consumes:
+- application/json
+- application/xml
+- application/gob
+- application/x-gob
+definitions:
+  GoaExampleAccountCurrentuser:
+    description: GoaExampleAccountCurrentuser media type (default view)
+    example:
+      name: Laborum voluptas a officiis.
+      userId: 1.970807810636654e+18
+    properties:
+      name:
+        description: Name of user
+        example: Laborum voluptas a officiis.
+        type: string
+      userId:
+        description: Unique User ID
+        example: 1.970807810636654e+18
+        format: int64
+        type: integer
+    required:
+    - userId
+    - name
+    title: 'Mediatype identifier: application/vnd.goa.example.account.currentuser+json;
+      view=default'
+    type: object
+  GoaExampleAccountLogin:
+    description: GoaExampleAccountLogin media type (default view)
+    example:
+      name: Eum molestiae temporibus et.
+      token: Voluptatem repellendus.
+      userId: 4.887016811865583e+18
+    properties:
+      name:
+        description: Name of user
+        example: Eum molestiae temporibus et.
+        type: string
+      token:
+        description: Unique User Token
+        example: Voluptatem repellendus.
+        type: string
+      userId:
+        description: Unique User ID
+        example: 4.887016811865583e+18
+        format: int64
+        type: integer
+    required:
+    - userId
+    - token
+    - name
+    title: 'Mediatype identifier: application/vnd.goa.example.account.login+json;
+      view=default'
+    type: object
+  GoaExampleAccountLogout:
+    description: GoaExampleAccountLogout media type (default view)
+    example:
+      status: false
+    properties:
+      status:
+        description: action status
+        example: false
+        type: boolean
+    title: 'Mediatype identifier: application/vnd.goa.example.account.logout+json;
+      view=default'
+    type: object
+  GoaExampleAccountOk:
+    description: GoaExampleAccountOk media type (default view)
+    example:
+      status: false
+    properties:
+      status:
+        description: action status
+        example: false
+        type: boolean
+    title: 'Mediatype identifier: application/vnd.goa.example.account.ok+json; view=default'
+    type: object
+  GoaExampleAccountRegister:
+    description: GoaExampleAccountRegister media type (default view)
+    example:
+      name: Velit debitis distinctio velit.
+      token: Iste odio explicabo quae accusantium id et.
+      userId: 8.09378452351465e+18
+    properties:
+      name:
+        description: Name of user
+        example: Velit debitis distinctio velit.
+        type: string
+      token:
+        description: Unique User Token
+        example: Iste odio explicabo quae accusantium id et.
+        type: string
+      userId:
+        description: Unique User ID
+        example: 8.09378452351465e+18
+        format: int64
+        type: integer
+    required:
+    - userId
+    - token
+    - name
+    title: 'Mediatype identifier: application/vnd.goa.example.account.register+json;
+      view=default'
+    type: object
+  error:
+    description: Error response media type (default view)
+    example:
+      code: invalid_value
+      detail: Value of ID must be an integer
+      id: 3F1FKVRR
+      meta:
+        timestamp: 1.458609066e+09
+      status: "400"
+    properties:
+      code:
+        description: an application-specific error code, expressed as a string value.
+        example: invalid_value
+        type: string
+      detail:
+        description: a human-readable explanation specific to this occurrence of the
+          problem.
+        example: Value of ID must be an integer
+        type: string
+      id:
+        description: a unique identifier for this particular occurrence of the problem.
+        example: 3F1FKVRR
+        type: string
+      meta:
+        additionalProperties: true
+        description: a meta object containing non-standard meta-information about
+          the error.
+        example:
+          timestamp: 1.458609066e+09
+        type: object
+      status:
+        description: the HTTP status code applicable to this problem, expressed as
+          a string value.
+        example: "400"
+        type: string
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+externalDocs:
+  description: wiki
+  url: https://github.com/tkc/goa-sandbox/wiki
+host: localhost:8080
+info:
+  contact:
+    email: iijima@onga.jp
+    name: tkc
+    url: https://github.com/tkc/goa-sandbox/issues
+  description: sample
+  license:
+    name: MIT
+    url: https://github.com/tkc/goa-sandbox/blob/master/LICENSE
+  title: goa-sandbox
+  version: ""
+paths:
+  /currentuser:
+    get:
+      operationId: account#currentUser
+      parameters:
+      - in: query
+        name: token
+        required: false
+        type: string
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.currentuser+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountCurrentuser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: currentUser account
+      tags:
+      - account
+  /jwt:
+    get:
+      description: |-
+        This action is secured with the jwt scheme
+
+        Required security scopes:
+          * `api:access`
+      operationId: jwt#secure
+      parameters:
+      - description: Force auth failure via JWT validation middleware
+        in: query
+        name: fail
+        required: false
+        type: boolean
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.ok+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountOk'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      security:
+      - jwt:
+        - api:access
+      summary: secure jwt
+      tags:
+      - jwt
+  /jwt/signin:
+    post:
+      description: Creates a valid JWT
+      operationId: jwt#signin
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.register+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountRegister'
+        "204":
+          description: No Content
+          headers:
+            Authorization:
+              description: Generated JWT
+              type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      security:
+      - SigninBasicAuth: []
+      summary: signin jwt
+      tags:
+      - jwt
+  /jwt/unsecure:
+    get:
+      description: This action does not require auth
+      operationId: jwt#unsecure
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.ok+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountOk'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: unsecure jwt
+      tags:
+      - jwt
+  /login:
+    post:
+      operationId: account#login
+      parameters:
+      - in: query
+        name: email
+        required: false
+        type: string
+      - in: query
+        name: passWord
+        required: false
+        type: string
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.login+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountLogin'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: login account
+      tags:
+      - account
+  /logout:
+    post:
+      operationId: account#logout
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.logout+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountLogout'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: logout account
+      tags:
+      - account
+  /register:
+    post:
+      operationId: account#register
+      parameters:
+      - in: query
+        name: email
+        required: false
+        type: string
+      - in: query
+        name: name
+        required: false
+        type: string
+      - in: query
+        name: passWord
+        required: false
+        type: string
+      produces:
+      - application/vnd.goa.error
+      - application/vnd.goa.example.account.register+json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GoaExampleAccountRegister'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: register account
+      tags:
+      - account
+produces:
+- application/json
+- application/xml
+- application/gob
+- application/x-gob
+schemes:
+- http
+securityDefinitions:
+  SigninBasicAuth:
+    type: basic
+  jwt:
+    description: |2-
+
+
+      **Security Scopes**:
+        * `api:access`: API access
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
