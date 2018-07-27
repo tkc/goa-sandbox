@@ -28,7 +28,7 @@ import (
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func SecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController, fail *bool) (http.ResponseWriter, *app.GoaExampleAccountOK) {
+func SecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController, fail *bool) (http.ResponseWriter, *app.GoaExampleAccount) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -54,7 +54,7 @@ func SecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 		query["fail"] = sliceVal
 	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/jwt"),
+		Path:     fmt.Sprintf("/jwt"),
 		RawQuery: query.Encode(),
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
@@ -90,12 +90,91 @@ func SecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountOK
+	var mt *app.GoaExampleAccount
 	if resp != nil {
 		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountOK)
+		mt, _ok = resp.(*app.GoaExampleAccount)
 		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountOK", resp, resp)
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccount", resp, resp)
+		}
+	}
+
+	// Return results
+	return rw, mt
+}
+
+// SecureJWTOKTiny runs the method Secure of the given controller with the given parameters.
+// It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
+// If ctx is nil then context.Background() is used.
+// If service is nil then a default service is created.
+func SecureJWTOKTiny(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController, fail *bool) (http.ResponseWriter, *app.GoaExampleAccountTiny) {
+	// Setup service
+	var (
+		logBuf bytes.Buffer
+		resp   interface{}
+
+		respSetter goatest.ResponseSetterFunc = func(r interface{}) { resp = r }
+	)
+	if service == nil {
+		service = goatest.Service(&logBuf, respSetter)
+	} else {
+		logger := log.New(&logBuf, "", log.Ltime)
+		service.WithLogger(goa.NewLogger(logger))
+		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
+		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
+		service.Encoder.Register(newEncoder, "*/*")
+	}
+
+	// Setup request context
+	rw := httptest.NewRecorder()
+	query := url.Values{}
+	if fail != nil {
+		sliceVal := []string{fmt.Sprintf("%v", *fail)}
+		query["fail"] = sliceVal
+	}
+	u := &url.URL{
+		Path:     fmt.Sprintf("/jwt"),
+		RawQuery: query.Encode(),
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		panic("invalid test " + err.Error()) // bug
+	}
+	prms := url.Values{}
+	if fail != nil {
+		sliceVal := []string{fmt.Sprintf("%v", *fail)}
+		prms["fail"] = sliceVal
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	goaCtx := goa.NewContext(goa.WithAction(ctx, "JWTTest"), rw, req, prms)
+	secureCtx, _err := app.NewSecureJWTContext(goaCtx, req, service)
+	if _err != nil {
+		e, ok := _err.(goa.ServiceError)
+		if !ok {
+			panic("invalid test data " + _err.Error()) // bug
+		}
+		t.Errorf("unexpected parameter validation error: %+v", e)
+		return nil, nil
+	}
+
+	// Perform action
+	_err = ctrl.Secure(secureCtx)
+
+	// Validate response
+	if _err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	}
+	if rw.Code != 200 {
+		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
+	}
+	var mt *app.GoaExampleAccountTiny
+	if resp != nil {
+		var _ok bool
+		mt, _ok = resp.(*app.GoaExampleAccountTiny)
+		if !_ok {
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountTiny", resp, resp)
 		}
 	}
 
@@ -133,7 +212,7 @@ func SecureJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 		query["fail"] = sliceVal
 	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/jwt"),
+		Path:     fmt.Sprintf("/jwt"),
 		RawQuery: query.Encode(),
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
@@ -181,11 +260,11 @@ func SecureJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 	return rw, mt
 }
 
-// SigninJWTNoContent runs the method Signin of the given controller with the given parameters.
+// SignInJWTNoContent runs the method SignIn of the given controller with the given parameters.
 // It returns the response writer so it's possible to inspect the response headers.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func SigninJWTNoContent(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) http.ResponseWriter {
+func SignInJWTNoContent(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) http.ResponseWriter {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -205,7 +284,7 @@ func SigninJWTNoContent(t goatest.TInterface, ctx context.Context, service *goa.
 	// Setup request context
 	rw := httptest.NewRecorder()
 	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/jwt/signin"),
+		Path: fmt.Sprintf("/jwt/sign_in"),
 	}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
@@ -216,7 +295,7 @@ func SigninJWTNoContent(t goatest.TInterface, ctx context.Context, service *goa.
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "JWTTest"), rw, req, prms)
-	signinCtx, _err := app.NewSigninJWTContext(goaCtx, req, service)
+	signInCtx, _err := app.NewSignInJWTContext(goaCtx, req, service)
 	if _err != nil {
 		e, ok := _err.(goa.ServiceError)
 		if !ok {
@@ -227,7 +306,7 @@ func SigninJWTNoContent(t goatest.TInterface, ctx context.Context, service *goa.
 	}
 
 	// Perform action
-	_err = ctrl.Signin(signinCtx)
+	_err = ctrl.SignIn(signInCtx)
 
 	// Validate response
 	if _err != nil {
@@ -241,11 +320,11 @@ func SigninJWTNoContent(t goatest.TInterface, ctx context.Context, service *goa.
 	return rw
 }
 
-// SigninJWTOK runs the method Signin of the given controller with the given parameters.
+// SignInJWTOK runs the method SignIn of the given controller with the given parameters.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func SigninJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, *app.GoaExampleAccountRegister) {
+func SignInJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, *app.GoaExampleAccount) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -266,7 +345,7 @@ func SigninJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	// Setup request context
 	rw := httptest.NewRecorder()
 	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/jwt/signin"),
+		Path: fmt.Sprintf("/jwt/sign_in"),
 	}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
@@ -277,7 +356,7 @@ func SigninJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "JWTTest"), rw, req, prms)
-	signinCtx, _err := app.NewSigninJWTContext(goaCtx, req, service)
+	signInCtx, _err := app.NewSignInJWTContext(goaCtx, req, service)
 	if _err != nil {
 		e, ok := _err.(goa.ServiceError)
 		if !ok {
@@ -288,7 +367,7 @@ func SigninJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	}
 
 	// Perform action
-	_err = ctrl.Signin(signinCtx)
+	_err = ctrl.SignIn(signInCtx)
 
 	// Validate response
 	if _err != nil {
@@ -297,16 +376,12 @@ func SigninJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountRegister
+	var mt *app.GoaExampleAccount
 	if resp != nil {
 		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountRegister)
+		mt, _ok = resp.(*app.GoaExampleAccount)
 		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountRegister", resp, resp)
-		}
-		_err = mt.Validate()
-		if _err != nil {
-			t.Errorf("invalid response media type: %s", _err)
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccount", resp, resp)
 		}
 	}
 
@@ -314,11 +389,11 @@ func SigninJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service
 	return rw, mt
 }
 
-// SigninJWTUnauthorized runs the method Signin of the given controller with the given parameters.
+// SignInJWTOKTiny runs the method SignIn of the given controller with the given parameters.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func SigninJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, error) {
+func SignInJWTOKTiny(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, *app.GoaExampleAccountTiny) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -339,7 +414,7 @@ func SigninJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 	// Setup request context
 	rw := httptest.NewRecorder()
 	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/jwt/signin"),
+		Path: fmt.Sprintf("/jwt/sign_in"),
 	}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
@@ -350,7 +425,76 @@ func SigninJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "JWTTest"), rw, req, prms)
-	signinCtx, _err := app.NewSigninJWTContext(goaCtx, req, service)
+	signInCtx, _err := app.NewSignInJWTContext(goaCtx, req, service)
+	if _err != nil {
+		e, ok := _err.(goa.ServiceError)
+		if !ok {
+			panic("invalid test data " + _err.Error()) // bug
+		}
+		t.Errorf("unexpected parameter validation error: %+v", e)
+		return nil, nil
+	}
+
+	// Perform action
+	_err = ctrl.SignIn(signInCtx)
+
+	// Validate response
+	if _err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	}
+	if rw.Code != 200 {
+		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
+	}
+	var mt *app.GoaExampleAccountTiny
+	if resp != nil {
+		var _ok bool
+		mt, _ok = resp.(*app.GoaExampleAccountTiny)
+		if !_ok {
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountTiny", resp, resp)
+		}
+	}
+
+	// Return results
+	return rw, mt
+}
+
+// SignInJWTUnauthorized runs the method SignIn of the given controller with the given parameters.
+// It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
+// If ctx is nil then context.Background() is used.
+// If service is nil then a default service is created.
+func SignInJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, error) {
+	// Setup service
+	var (
+		logBuf bytes.Buffer
+		resp   interface{}
+
+		respSetter goatest.ResponseSetterFunc = func(r interface{}) { resp = r }
+	)
+	if service == nil {
+		service = goatest.Service(&logBuf, respSetter)
+	} else {
+		logger := log.New(&logBuf, "", log.Ltime)
+		service.WithLogger(goa.NewLogger(logger))
+		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
+		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
+		service.Encoder.Register(newEncoder, "*/*")
+	}
+
+	// Setup request context
+	rw := httptest.NewRecorder()
+	u := &url.URL{
+		Path: fmt.Sprintf("/jwt/sign_in"),
+	}
+	req, err := http.NewRequest("POST", u.String(), nil)
+	if err != nil {
+		panic("invalid test " + err.Error()) // bug
+	}
+	prms := url.Values{}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	goaCtx := goa.NewContext(goa.WithAction(ctx, "JWTTest"), rw, req, prms)
+	signInCtx, _err := app.NewSignInJWTContext(goaCtx, req, service)
 	if _err != nil {
 		e, ok := _err.(goa.ServiceError)
 		if !ok {
@@ -360,7 +504,7 @@ func SigninJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 	}
 
 	// Perform action
-	_err = ctrl.Signin(signinCtx)
+	_err = ctrl.SignIn(signInCtx)
 
 	// Validate response
 	if _err != nil {
@@ -386,7 +530,7 @@ func SigninJWTUnauthorized(t goatest.TInterface, ctx context.Context, service *g
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func UnsecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, *app.GoaExampleAccountOK) {
+func UnsecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, *app.GoaExampleAccount) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -407,7 +551,7 @@ func UnsecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Servi
 	// Setup request context
 	rw := httptest.NewRecorder()
 	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/jwt/unsecure"),
+		Path: fmt.Sprintf("/jwt/unsecure"),
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -438,12 +582,81 @@ func UnsecureJWTOK(t goatest.TInterface, ctx context.Context, service *goa.Servi
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountOK
+	var mt *app.GoaExampleAccount
 	if resp != nil {
 		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountOK)
+		mt, _ok = resp.(*app.GoaExampleAccount)
 		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountOK", resp, resp)
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccount", resp, resp)
+		}
+	}
+
+	// Return results
+	return rw, mt
+}
+
+// UnsecureJWTOKTiny runs the method Unsecure of the given controller with the given parameters.
+// It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
+// If ctx is nil then context.Background() is used.
+// If service is nil then a default service is created.
+func UnsecureJWTOKTiny(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.JWTController) (http.ResponseWriter, *app.GoaExampleAccountTiny) {
+	// Setup service
+	var (
+		logBuf bytes.Buffer
+		resp   interface{}
+
+		respSetter goatest.ResponseSetterFunc = func(r interface{}) { resp = r }
+	)
+	if service == nil {
+		service = goatest.Service(&logBuf, respSetter)
+	} else {
+		logger := log.New(&logBuf, "", log.Ltime)
+		service.WithLogger(goa.NewLogger(logger))
+		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
+		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
+		service.Encoder.Register(newEncoder, "*/*")
+	}
+
+	// Setup request context
+	rw := httptest.NewRecorder()
+	u := &url.URL{
+		Path: fmt.Sprintf("/jwt/unsecure"),
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		panic("invalid test " + err.Error()) // bug
+	}
+	prms := url.Values{}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	goaCtx := goa.NewContext(goa.WithAction(ctx, "JWTTest"), rw, req, prms)
+	unsecureCtx, _err := app.NewUnsecureJWTContext(goaCtx, req, service)
+	if _err != nil {
+		e, ok := _err.(goa.ServiceError)
+		if !ok {
+			panic("invalid test data " + _err.Error()) // bug
+		}
+		t.Errorf("unexpected parameter validation error: %+v", e)
+		return nil, nil
+	}
+
+	// Perform action
+	_err = ctrl.Unsecure(unsecureCtx)
+
+	// Validate response
+	if _err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	}
+	if rw.Code != 200 {
+		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
+	}
+	var mt *app.GoaExampleAccountTiny
+	if resp != nil {
+		var _ok bool
+		mt, _ok = resp.(*app.GoaExampleAccountTiny)
+		if !_ok {
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountTiny", resp, resp)
 		}
 	}
 
@@ -476,7 +689,7 @@ func UnsecureJWTUnauthorized(t goatest.TInterface, ctx context.Context, service 
 	// Setup request context
 	rw := httptest.NewRecorder()
 	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/jwt/unsecure"),
+		Path: fmt.Sprintf("/jwt/unsecure"),
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {

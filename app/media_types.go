@@ -10,89 +10,32 @@
 
 package app
 
-import (
-	"github.com/goadesign/goa"
-)
-
-// GoaExampleAccountCurrentuser media type (default view)
+// GoaExampleAccount media type (default view)
 //
-// Identifier: application/vnd.goa.example.account.currentuser+json; view=default
-type GoaExampleAccountCurrentuser struct {
+// Identifier: application/vnd.goa.example.account+json; view=default
+type GoaExampleAccount struct {
 	// Name of user
-	Name string `form:"name" json:"name" yaml:"name" xml:"name"`
-	// Unique User ID
-	UserID int `form:"userId" json:"userId" yaml:"userId" xml:"userId"`
-}
-
-// Validate validates the GoaExampleAccountCurrentuser media type instance.
-func (mt *GoaExampleAccountCurrentuser) Validate() (err error) {
-
-	if mt.Name == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "name"))
-	}
-	return
-}
-
-// GoaExampleAccountLogin media type (default view)
-//
-// Identifier: application/vnd.goa.example.account.login+json; view=default
-type GoaExampleAccountLogin struct {
-	// Name of user
-	Name string `form:"name" json:"name" yaml:"name" xml:"name"`
+	Name *string `form:"name,omitempty" json:"name,omitempty" yaml:"name,omitempty" xml:"name,omitempty"`
 	// Unique User Token
-	Token string `form:"token" json:"token" yaml:"token" xml:"token"`
+	Token *string `form:"token,omitempty" json:"token,omitempty" yaml:"token,omitempty" xml:"token,omitempty"`
 	// Unique User ID
 	UserID int `form:"userId" json:"userId" yaml:"userId" xml:"userId"`
 }
 
-// Validate validates the GoaExampleAccountLogin media type instance.
-func (mt *GoaExampleAccountLogin) Validate() (err error) {
-
-	if mt.Token == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "token"))
-	}
-	if mt.Name == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "name"))
-	}
-	return
-}
-
-// GoaExampleAccountLogout media type (default view)
+// GoaExampleAccount media type (tiny view)
 //
-// Identifier: application/vnd.goa.example.account.logout+json; view=default
-type GoaExampleAccountLogout struct {
-	// action status
-	Status *bool `form:"status,omitempty" json:"status,omitempty" yaml:"status,omitempty" xml:"status,omitempty"`
-}
-
-// GoaExampleAccountOk media type (default view)
-//
-// Identifier: application/vnd.goa.example.account.ok+json; view=default
-type GoaExampleAccountOK struct {
-	// action status
-	Status *bool `form:"status,omitempty" json:"status,omitempty" yaml:"status,omitempty" xml:"status,omitempty"`
-}
-
-// GoaExampleAccountRegister media type (default view)
-//
-// Identifier: application/vnd.goa.example.account.register+json; view=default
-type GoaExampleAccountRegister struct {
-	// Name of user
-	Name string `form:"name" json:"name" yaml:"name" xml:"name"`
-	// Unique User Token
-	Token string `form:"token" json:"token" yaml:"token" xml:"token"`
+// Identifier: application/vnd.goa.example.account+json; view=tiny
+type GoaExampleAccountTiny struct {
 	// Unique User ID
 	UserID int `form:"userId" json:"userId" yaml:"userId" xml:"userId"`
 }
 
-// Validate validates the GoaExampleAccountRegister media type instance.
-func (mt *GoaExampleAccountRegister) Validate() (err error) {
+// GoaExampleAccountCollection is the media type for an array of GoaExampleAccount (default view)
+//
+// Identifier: application/vnd.goa.example.account+json; type=collection; view=default
+type GoaExampleAccountCollection []*GoaExampleAccount
 
-	if mt.Token == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "token"))
-	}
-	if mt.Name == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "name"))
-	}
-	return
-}
+// GoaExampleAccountCollection is the media type for an array of GoaExampleAccount (tiny view)
+//
+// Identifier: application/vnd.goa.example.account+json; type=collection; view=tiny
+type GoaExampleAccountTinyCollection []*GoaExampleAccountTiny

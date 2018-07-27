@@ -11,22 +11,23 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	uuid "github.com/goadesign/goa/uuid"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 // CurrentUserAccountPath computes a request path to the currentUser action of account.
 func CurrentUserAccountPath() string {
 
-	return fmt.Sprintf("/api/v1/currentuser")
+	return fmt.Sprintf("/current_user")
 }
 
 // CurrentUserAccount makes a request to the currentUser action endpoint of the account resource
-func (c *Client) CurrentUserAccount(ctx context.Context, path string, token *uuid.UUID) (*http.Response, error) {
-	req, err := c.NewCurrentUserAccountRequest(ctx, path, token)
+func (c *Client) CurrentUserAccount(ctx context.Context, path string) (*http.Response, error) {
+	req, err := c.NewCurrentUserAccountRequest(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -34,18 +35,12 @@ func (c *Client) CurrentUserAccount(ctx context.Context, path string, token *uui
 }
 
 // NewCurrentUserAccountRequest create the request corresponding to the currentUser action endpoint of the account resource.
-func (c *Client) NewCurrentUserAccountRequest(ctx context.Context, path string, token *uuid.UUID) (*http.Request, error) {
+func (c *Client) NewCurrentUserAccountRequest(ctx context.Context, path string) (*http.Request, error) {
 	scheme := c.Scheme
 	if scheme == "" {
 		scheme = "http"
 	}
 	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
-	values := u.Query()
-	if token != nil {
-		tmp10 := token.String()
-		values.Set("token", tmp10)
-	}
-	u.RawQuery = values.Encode()
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
@@ -53,15 +48,64 @@ func (c *Client) NewCurrentUserAccountRequest(ctx context.Context, path string, 
 	return req, nil
 }
 
+// ListAccountPath computes a request path to the list action of account.
+func ListAccountPath() string {
+
+	return fmt.Sprintf("/list")
+}
+
+// ListAccount makes a request to the list action endpoint of the account resource
+func (c *Client) ListAccount(ctx context.Context, path string, payload *AccountListPayload, ids []int, contentType string) (*http.Response, error) {
+	req, err := c.NewListAccountRequest(ctx, path, payload, ids, contentType)
+	if err != nil {
+		return nil, err
+	}
+	return c.Client.Do(ctx, req)
+}
+
+// NewListAccountRequest create the request corresponding to the list action endpoint of the account resource.
+func (c *Client) NewListAccountRequest(ctx context.Context, path string, payload *AccountListPayload, ids []int, contentType string) (*http.Request, error) {
+	var body bytes.Buffer
+	if contentType == "" {
+		contentType = "*/*" // Use default encoder
+	}
+	err := c.Encoder.Encode(payload, &body, contentType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode body: %s", err)
+	}
+	scheme := c.Scheme
+	if scheme == "" {
+		scheme = "http"
+	}
+	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
+	values := u.Query()
+	for _, p := range ids {
+		tmp8 := strconv.Itoa(p)
+		values.Add("ids", tmp8)
+	}
+	u.RawQuery = values.Encode()
+	req, err := http.NewRequest("GET", u.String(), &body)
+	if err != nil {
+		return nil, err
+	}
+	header := req.Header
+	if contentType == "*/*" {
+		header.Set("Content-Type", "application/json")
+	} else {
+		header.Set("Content-Type", contentType)
+	}
+	return req, nil
+}
+
 // LoginAccountPath computes a request path to the login action of account.
 func LoginAccountPath() string {
 
-	return fmt.Sprintf("/api/v1/login")
+	return fmt.Sprintf("/login")
 }
 
 // LoginAccount makes a request to the login action endpoint of the account resource
-func (c *Client) LoginAccount(ctx context.Context, path string, email *string, passWord *string) (*http.Response, error) {
-	req, err := c.NewLoginAccountRequest(ctx, path, email, passWord)
+func (c *Client) LoginAccount(ctx context.Context, path string, payload *AccountPayload, contentType string) (*http.Response, error) {
+	req, err := c.NewLoginAccountRequest(ctx, path, payload, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -69,92 +113,29 @@ func (c *Client) LoginAccount(ctx context.Context, path string, email *string, p
 }
 
 // NewLoginAccountRequest create the request corresponding to the login action endpoint of the account resource.
-func (c *Client) NewLoginAccountRequest(ctx context.Context, path string, email *string, passWord *string) (*http.Request, error) {
+func (c *Client) NewLoginAccountRequest(ctx context.Context, path string, payload *AccountPayload, contentType string) (*http.Request, error) {
+	var body bytes.Buffer
+	if contentType == "" {
+		contentType = "*/*" // Use default encoder
+	}
+	err := c.Encoder.Encode(payload, &body, contentType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode body: %s", err)
+	}
 	scheme := c.Scheme
 	if scheme == "" {
 		scheme = "http"
 	}
 	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
-	values := u.Query()
-	if email != nil {
-		values.Set("email", *email)
-	}
-	if passWord != nil {
-		values.Set("passWord", *passWord)
-	}
-	u.RawQuery = values.Encode()
-	req, err := http.NewRequest("POST", u.String(), nil)
+	req, err := http.NewRequest("POST", u.String(), &body)
 	if err != nil {
 		return nil, err
 	}
-	return req, nil
-}
-
-// LogoutAccountPath computes a request path to the logout action of account.
-func LogoutAccountPath() string {
-
-	return fmt.Sprintf("/api/v1/logout")
-}
-
-// LogoutAccount makes a request to the logout action endpoint of the account resource
-func (c *Client) LogoutAccount(ctx context.Context, path string) (*http.Response, error) {
-	req, err := c.NewLogoutAccountRequest(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-	return c.Client.Do(ctx, req)
-}
-
-// NewLogoutAccountRequest create the request corresponding to the logout action endpoint of the account resource.
-func (c *Client) NewLogoutAccountRequest(ctx context.Context, path string) (*http.Request, error) {
-	scheme := c.Scheme
-	if scheme == "" {
-		scheme = "http"
-	}
-	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	return req, nil
-}
-
-// RegisterAccountPath computes a request path to the register action of account.
-func RegisterAccountPath() string {
-
-	return fmt.Sprintf("/api/v1/register")
-}
-
-// RegisterAccount makes a request to the register action endpoint of the account resource
-func (c *Client) RegisterAccount(ctx context.Context, path string, email *string, name *string, passWord *string) (*http.Response, error) {
-	req, err := c.NewRegisterAccountRequest(ctx, path, email, name, passWord)
-	if err != nil {
-		return nil, err
-	}
-	return c.Client.Do(ctx, req)
-}
-
-// NewRegisterAccountRequest create the request corresponding to the register action endpoint of the account resource.
-func (c *Client) NewRegisterAccountRequest(ctx context.Context, path string, email *string, name *string, passWord *string) (*http.Request, error) {
-	scheme := c.Scheme
-	if scheme == "" {
-		scheme = "http"
-	}
-	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
-	values := u.Query()
-	if email != nil {
-		values.Set("email", *email)
-	}
-	if name != nil {
-		values.Set("name", *name)
-	}
-	if passWord != nil {
-		values.Set("passWord", *passWord)
-	}
-	u.RawQuery = values.Encode()
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		return nil, err
+	header := req.Header
+	if contentType == "*/*" {
+		header.Set("Content-Type", "application/json")
+	} else {
+		header.Set("Content-Type", contentType)
 	}
 	return req, nil
 }

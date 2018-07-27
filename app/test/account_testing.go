@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"github.com/goadesign/goa"
 	"github.com/goadesign/goa/goatest"
-	uuid "github.com/satori/go.uuid"
 	"github.com/tkc/goa-sandbox/app"
 	"io"
 	"log"
@@ -29,7 +28,7 @@ import (
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func CurrentUserAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, token *uuid.UUID) (http.ResponseWriter, error) {
+func CurrentUserAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController) (http.ResponseWriter, error) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -49,24 +48,14 @@ func CurrentUserAccountBadRequest(t goatest.TInterface, ctx context.Context, ser
 
 	// Setup request context
 	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if token != nil {
-		sliceVal := []string{fmt.Sprintf("%v", *token)}
-		query["token"] = sliceVal
-	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/currentuser"),
-		RawQuery: query.Encode(),
+		Path: fmt.Sprintf("/current_user"),
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		panic("invalid test " + err.Error()) // bug
 	}
 	prms := url.Values{}
-	if token != nil {
-		sliceVal := []string{fmt.Sprintf("%v", *token)}
-		prms["token"] = sliceVal
-	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -107,7 +96,7 @@ func CurrentUserAccountBadRequest(t goatest.TInterface, ctx context.Context, ser
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func CurrentUserAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, token *uuid.UUID) (http.ResponseWriter, *app.GoaExampleAccountCurrentuser) {
+func CurrentUserAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController) (http.ResponseWriter, *app.GoaExampleAccount) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -127,24 +116,14 @@ func CurrentUserAccountOK(t goatest.TInterface, ctx context.Context, service *go
 
 	// Setup request context
 	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if token != nil {
-		sliceVal := []string{fmt.Sprintf("%v", *token)}
-		query["token"] = sliceVal
-	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/currentuser"),
-		RawQuery: query.Encode(),
+		Path: fmt.Sprintf("/current_user"),
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		panic("invalid test " + err.Error()) // bug
 	}
 	prms := url.Values{}
-	if token != nil {
-		sliceVal := []string{fmt.Sprintf("%v", *token)}
-		prms["token"] = sliceVal
-	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -169,16 +148,12 @@ func CurrentUserAccountOK(t goatest.TInterface, ctx context.Context, service *go
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountCurrentuser
+	var mt *app.GoaExampleAccount
 	if resp != nil {
 		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountCurrentuser)
+		mt, _ok = resp.(*app.GoaExampleAccount)
 		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountCurrentuser", resp, resp)
-		}
-		_err = mt.Validate()
-		if _err != nil {
-			t.Errorf("invalid response media type: %s", _err)
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccount", resp, resp)
 		}
 	}
 
@@ -186,11 +161,11 @@ func CurrentUserAccountOK(t goatest.TInterface, ctx context.Context, service *go
 	return rw, mt
 }
 
-// LoginAccountBadRequest runs the method Login of the given controller with the given parameters.
+// CurrentUserAccountOKTiny runs the method CurrentUser of the given controller with the given parameters.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LoginAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, email *string, passWord *string) (http.ResponseWriter, error) {
+func CurrentUserAccountOKTiny(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController) (http.ResponseWriter, *app.GoaExampleAccountTiny) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -210,123 +185,19 @@ func LoginAccountBadRequest(t goatest.TInterface, ctx context.Context, service *
 
 	// Setup request context
 	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		query["email"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		query["passWord"] = sliceVal
-	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/login"),
-		RawQuery: query.Encode(),
+		Path: fmt.Sprintf("/current_user"),
 	}
-	req, err := http.NewRequest("POST", u.String(), nil)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		panic("invalid test " + err.Error()) // bug
 	}
 	prms := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		prms["email"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		prms["passWord"] = sliceVal
-	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
-	loginCtx, _err := app.NewLoginAccountContext(goaCtx, req, service)
-	if _err != nil {
-		e, ok := _err.(goa.ServiceError)
-		if !ok {
-			panic("invalid test data " + _err.Error()) // bug
-		}
-		return nil, e
-	}
-
-	// Perform action
-	_err = ctrl.Login(loginCtx)
-
-	// Validate response
-	if _err != nil {
-		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
-	}
-	if rw.Code != 400 {
-		t.Errorf("invalid response status code: got %+v, expected 400", rw.Code)
-	}
-	var mt error
-	if resp != nil {
-		var _ok bool
-		mt, _ok = resp.(error)
-		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of error", resp, resp)
-		}
-	}
-
-	// Return results
-	return rw, mt
-}
-
-// LoginAccountOK runs the method Login of the given controller with the given parameters.
-// It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
-// If ctx is nil then context.Background() is used.
-// If service is nil then a default service is created.
-func LoginAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, email *string, passWord *string) (http.ResponseWriter, *app.GoaExampleAccountLogin) {
-	// Setup service
-	var (
-		logBuf bytes.Buffer
-		resp   interface{}
-
-		respSetter goatest.ResponseSetterFunc = func(r interface{}) { resp = r }
-	)
-	if service == nil {
-		service = goatest.Service(&logBuf, respSetter)
-	} else {
-		logger := log.New(&logBuf, "", log.Ltime)
-		service.WithLogger(goa.NewLogger(logger))
-		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
-		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
-		service.Encoder.Register(newEncoder, "*/*")
-	}
-
-	// Setup request context
-	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		query["email"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		query["passWord"] = sliceVal
-	}
-	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/login"),
-		RawQuery: query.Encode(),
-	}
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		panic("invalid test " + err.Error()) // bug
-	}
-	prms := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		prms["email"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		prms["passWord"] = sliceVal
-	}
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
-	loginCtx, _err := app.NewLoginAccountContext(goaCtx, req, service)
+	currentUserCtx, _err := app.NewCurrentUserAccountContext(goaCtx, req, service)
 	if _err != nil {
 		e, ok := _err.(goa.ServiceError)
 		if !ok {
@@ -337,7 +208,7 @@ func LoginAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Serv
 	}
 
 	// Perform action
-	_err = ctrl.Login(loginCtx)
+	_err = ctrl.CurrentUser(currentUserCtx)
 
 	// Validate response
 	if _err != nil {
@@ -346,16 +217,12 @@ func LoginAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Serv
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountLogin
+	var mt *app.GoaExampleAccountTiny
 	if resp != nil {
 		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountLogin)
+		mt, _ok = resp.(*app.GoaExampleAccountTiny)
 		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountLogin", resp, resp)
-		}
-		_err = mt.Validate()
-		if _err != nil {
-			t.Errorf("invalid response media type: %s", _err)
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountTiny", resp, resp)
 		}
 	}
 
@@ -363,11 +230,11 @@ func LoginAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Serv
 	return rw, mt
 }
 
-// LogoutAccountBadRequest runs the method Logout of the given controller with the given parameters.
+// ListAccountBadRequest runs the method List of the given controller with the given parameters and payload.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LogoutAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController) (http.ResponseWriter, error) {
+func ListAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, ids []int, payload *app.AccountListPayload) (http.ResponseWriter, error) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -385,44 +252,71 @@ func LogoutAccountBadRequest(t goatest.TInterface, ctx context.Context, service 
 		service.Encoder.Register(newEncoder, "*/*")
 	}
 
-	// Setup request context
-	rw := httptest.NewRecorder()
-	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/logout"),
-	}
-	req, err := http.NewRequest("POST", u.String(), nil)
+	// Validate payload
+	err := payload.Validate()
 	if err != nil {
-		panic("invalid test " + err.Error()) // bug
-	}
-	prms := url.Values{}
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
-	logoutCtx, _err := app.NewLogoutAccountContext(goaCtx, req, service)
-	if _err != nil {
-		e, ok := _err.(goa.ServiceError)
+		e, ok := err.(goa.ServiceError)
 		if !ok {
-			panic("invalid test data " + _err.Error()) // bug
+			panic(err) // bug
 		}
 		return nil, e
 	}
 
+	// Setup request context
+	rw := httptest.NewRecorder()
+	query := url.Values{}
+	{
+		sliceVal := make([]string, len(ids))
+		for i, v := range ids {
+			sliceVal[i] = fmt.Sprintf("%v", v)
+		}
+		query["ids"] = sliceVal
+	}
+	u := &url.URL{
+		Path:     fmt.Sprintf("/list"),
+		RawQuery: query.Encode(),
+	}
+	req, _err := http.NewRequest("GET", u.String(), nil)
+	if _err != nil {
+		panic("invalid test " + _err.Error()) // bug
+	}
+	prms := url.Values{}
+	{
+		sliceVal := make([]string, len(ids))
+		for i, v := range ids {
+			sliceVal[i] = fmt.Sprintf("%v", v)
+		}
+		prms["ids"] = sliceVal
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
+	listCtx, __err := app.NewListAccountContext(goaCtx, req, service)
+	if __err != nil {
+		_e, _ok := __err.(goa.ServiceError)
+		if !_ok {
+			panic("invalid test data " + __err.Error()) // bug
+		}
+		return nil, _e
+	}
+	listCtx.Payload = payload
+
 	// Perform action
-	_err = ctrl.Logout(logoutCtx)
+	__err = ctrl.List(listCtx)
 
 	// Validate response
-	if _err != nil {
-		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	if __err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", __err, logBuf.String())
 	}
 	if rw.Code != 400 {
 		t.Errorf("invalid response status code: got %+v, expected 400", rw.Code)
 	}
 	var mt error
 	if resp != nil {
-		var _ok bool
-		mt, _ok = resp.(error)
-		if !_ok {
+		var __ok bool
+		mt, __ok = resp.(error)
+		if !__ok {
 			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of error", resp, resp)
 		}
 	}
@@ -431,11 +325,11 @@ func LogoutAccountBadRequest(t goatest.TInterface, ctx context.Context, service 
 	return rw, mt
 }
 
-// LogoutAccountOK runs the method Logout of the given controller with the given parameters.
+// ListAccountOK runs the method List of the given controller with the given parameters and payload.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func LogoutAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController) (http.ResponseWriter, *app.GoaExampleAccountLogout) {
+func ListAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, ids []int, payload *app.AccountListPayload) (http.ResponseWriter, app.GoaExampleAccountCollection) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -453,46 +347,74 @@ func LogoutAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Ser
 		service.Encoder.Register(newEncoder, "*/*")
 	}
 
+	// Validate payload
+	err := payload.Validate()
+	if err != nil {
+		e, ok := err.(goa.ServiceError)
+		if !ok {
+			panic(err) // bug
+		}
+		t.Errorf("unexpected payload validation error: %+v", e)
+		return nil, nil
+	}
+
 	// Setup request context
 	rw := httptest.NewRecorder()
-	u := &url.URL{
-		Path: fmt.Sprintf("/api/v1/logout"),
+	query := url.Values{}
+	{
+		sliceVal := make([]string, len(ids))
+		for i, v := range ids {
+			sliceVal[i] = fmt.Sprintf("%v", v)
+		}
+		query["ids"] = sliceVal
 	}
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		panic("invalid test " + err.Error()) // bug
+	u := &url.URL{
+		Path:     fmt.Sprintf("/list"),
+		RawQuery: query.Encode(),
+	}
+	req, _err := http.NewRequest("GET", u.String(), nil)
+	if _err != nil {
+		panic("invalid test " + _err.Error()) // bug
 	}
 	prms := url.Values{}
+	{
+		sliceVal := make([]string, len(ids))
+		for i, v := range ids {
+			sliceVal[i] = fmt.Sprintf("%v", v)
+		}
+		prms["ids"] = sliceVal
+	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
-	logoutCtx, _err := app.NewLogoutAccountContext(goaCtx, req, service)
-	if _err != nil {
-		e, ok := _err.(goa.ServiceError)
-		if !ok {
-			panic("invalid test data " + _err.Error()) // bug
+	listCtx, __err := app.NewListAccountContext(goaCtx, req, service)
+	if __err != nil {
+		_e, _ok := __err.(goa.ServiceError)
+		if !_ok {
+			panic("invalid test data " + __err.Error()) // bug
 		}
-		t.Errorf("unexpected parameter validation error: %+v", e)
+		t.Errorf("unexpected parameter validation error: %+v", _e)
 		return nil, nil
 	}
+	listCtx.Payload = payload
 
 	// Perform action
-	_err = ctrl.Logout(logoutCtx)
+	__err = ctrl.List(listCtx)
 
 	// Validate response
-	if _err != nil {
-		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	if __err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", __err, logBuf.String())
 	}
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountLogout
+	var mt app.GoaExampleAccountCollection
 	if resp != nil {
-		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountLogout)
-		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountLogout", resp, resp)
+		var __ok bool
+		mt, __ok = resp.(app.GoaExampleAccountCollection)
+		if !__ok {
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountCollection", resp, resp)
 		}
 	}
 
@@ -500,11 +422,11 @@ func LogoutAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Ser
 	return rw, mt
 }
 
-// RegisterAccountBadRequest runs the method Register of the given controller with the given parameters.
+// ListAccountOKTiny runs the method List of the given controller with the given parameters and payload.
 // It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func RegisterAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, email *string, name *string, passWord *string) (http.ResponseWriter, error) {
+func ListAccountOKTiny(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, ids []int, payload *app.AccountListPayload) (http.ResponseWriter, app.GoaExampleAccountTinyCollection) {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
@@ -522,70 +444,152 @@ func RegisterAccountBadRequest(t goatest.TInterface, ctx context.Context, servic
 		service.Encoder.Register(newEncoder, "*/*")
 	}
 
+	// Validate payload
+	err := payload.Validate()
+	if err != nil {
+		e, ok := err.(goa.ServiceError)
+		if !ok {
+			panic(err) // bug
+		}
+		t.Errorf("unexpected payload validation error: %+v", e)
+		return nil, nil
+	}
+
 	// Setup request context
 	rw := httptest.NewRecorder()
 	query := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		query["email"] = sliceVal
-	}
-	if name != nil {
-		sliceVal := []string{*name}
-		query["name"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		query["passWord"] = sliceVal
+	{
+		sliceVal := make([]string, len(ids))
+		for i, v := range ids {
+			sliceVal[i] = fmt.Sprintf("%v", v)
+		}
+		query["ids"] = sliceVal
 	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/register"),
+		Path:     fmt.Sprintf("/list"),
 		RawQuery: query.Encode(),
 	}
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		panic("invalid test " + err.Error()) // bug
+	req, _err := http.NewRequest("GET", u.String(), nil)
+	if _err != nil {
+		panic("invalid test " + _err.Error()) // bug
 	}
 	prms := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		prms["email"] = sliceVal
-	}
-	if name != nil {
-		sliceVal := []string{*name}
-		prms["name"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		prms["passWord"] = sliceVal
+	{
+		sliceVal := make([]string, len(ids))
+		for i, v := range ids {
+			sliceVal[i] = fmt.Sprintf("%v", v)
+		}
+		prms["ids"] = sliceVal
 	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
-	registerCtx, _err := app.NewRegisterAccountContext(goaCtx, req, service)
-	if _err != nil {
-		e, ok := _err.(goa.ServiceError)
+	listCtx, __err := app.NewListAccountContext(goaCtx, req, service)
+	if __err != nil {
+		_e, _ok := __err.(goa.ServiceError)
+		if !_ok {
+			panic("invalid test data " + __err.Error()) // bug
+		}
+		t.Errorf("unexpected parameter validation error: %+v", _e)
+		return nil, nil
+	}
+	listCtx.Payload = payload
+
+	// Perform action
+	__err = ctrl.List(listCtx)
+
+	// Validate response
+	if __err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", __err, logBuf.String())
+	}
+	if rw.Code != 200 {
+		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
+	}
+	var mt app.GoaExampleAccountTinyCollection
+	if resp != nil {
+		var __ok bool
+		mt, __ok = resp.(app.GoaExampleAccountTinyCollection)
+		if !__ok {
+			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountTinyCollection", resp, resp)
+		}
+	}
+
+	// Return results
+	return rw, mt
+}
+
+// LoginAccountBadRequest runs the method Login of the given controller with the given parameters and payload.
+// It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
+// If ctx is nil then context.Background() is used.
+// If service is nil then a default service is created.
+func LoginAccountBadRequest(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, payload *app.AccountPayload) (http.ResponseWriter, error) {
+	// Setup service
+	var (
+		logBuf bytes.Buffer
+		resp   interface{}
+
+		respSetter goatest.ResponseSetterFunc = func(r interface{}) { resp = r }
+	)
+	if service == nil {
+		service = goatest.Service(&logBuf, respSetter)
+	} else {
+		logger := log.New(&logBuf, "", log.Ltime)
+		service.WithLogger(goa.NewLogger(logger))
+		newEncoder := func(io.Writer) goa.Encoder { return respSetter }
+		service.Encoder = goa.NewHTTPEncoder() // Make sure the code ends up using this decoder
+		service.Encoder.Register(newEncoder, "*/*")
+	}
+
+	// Validate payload
+	err := payload.Validate()
+	if err != nil {
+		e, ok := err.(goa.ServiceError)
 		if !ok {
-			panic("invalid test data " + _err.Error()) // bug
+			panic(err) // bug
 		}
 		return nil, e
 	}
 
+	// Setup request context
+	rw := httptest.NewRecorder()
+	u := &url.URL{
+		Path: fmt.Sprintf("/login"),
+	}
+	req, _err := http.NewRequest("POST", u.String(), nil)
+	if _err != nil {
+		panic("invalid test " + _err.Error()) // bug
+	}
+	prms := url.Values{}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
+	loginCtx, __err := app.NewLoginAccountContext(goaCtx, req, service)
+	if __err != nil {
+		_e, _ok := __err.(goa.ServiceError)
+		if !_ok {
+			panic("invalid test data " + __err.Error()) // bug
+		}
+		return nil, _e
+	}
+	loginCtx.Payload = payload
+
 	// Perform action
-	_err = ctrl.Register(registerCtx)
+	__err = ctrl.Login(loginCtx)
 
 	// Validate response
-	if _err != nil {
-		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	if __err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", __err, logBuf.String())
 	}
 	if rw.Code != 400 {
 		t.Errorf("invalid response status code: got %+v, expected 400", rw.Code)
 	}
 	var mt error
 	if resp != nil {
-		var _ok bool
-		mt, _ok = resp.(error)
-		if !_ok {
+		var __ok bool
+		mt, __ok = resp.(error)
+		if !__ok {
 			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of error", resp, resp)
 		}
 	}
@@ -594,17 +598,16 @@ func RegisterAccountBadRequest(t goatest.TInterface, ctx context.Context, servic
 	return rw, mt
 }
 
-// RegisterAccountOK runs the method Register of the given controller with the given parameters.
-// It returns the response writer so it's possible to inspect the response headers and the media type struct written to the response.
+// LoginAccountOK runs the method Login of the given controller with the given parameters and payload.
+// It returns the response writer so it's possible to inspect the response headers.
 // If ctx is nil then context.Background() is used.
 // If service is nil then a default service is created.
-func RegisterAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, email *string, name *string, passWord *string) (http.ResponseWriter, *app.GoaExampleAccountRegister) {
+func LoginAccountOK(t goatest.TInterface, ctx context.Context, service *goa.Service, ctrl app.AccountController, payload *app.AccountPayload) http.ResponseWriter {
 	// Setup service
 	var (
 		logBuf bytes.Buffer
-		resp   interface{}
 
-		respSetter goatest.ResponseSetterFunc = func(r interface{}) { resp = r }
+		respSetter goatest.ResponseSetterFunc = func(r interface{}) {}
 	)
 	if service == nil {
 		service = goatest.Service(&logBuf, respSetter)
@@ -616,79 +619,53 @@ func RegisterAccountOK(t goatest.TInterface, ctx context.Context, service *goa.S
 		service.Encoder.Register(newEncoder, "*/*")
 	}
 
+	// Validate payload
+	err := payload.Validate()
+	if err != nil {
+		e, ok := err.(goa.ServiceError)
+		if !ok {
+			panic(err) // bug
+		}
+		t.Errorf("unexpected payload validation error: %+v", e)
+		return nil
+	}
+
 	// Setup request context
 	rw := httptest.NewRecorder()
-	query := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		query["email"] = sliceVal
-	}
-	if name != nil {
-		sliceVal := []string{*name}
-		query["name"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		query["passWord"] = sliceVal
-	}
 	u := &url.URL{
-		Path:     fmt.Sprintf("/api/v1/register"),
-		RawQuery: query.Encode(),
+		Path: fmt.Sprintf("/login"),
 	}
-	req, err := http.NewRequest("POST", u.String(), nil)
-	if err != nil {
-		panic("invalid test " + err.Error()) // bug
+	req, _err := http.NewRequest("POST", u.String(), nil)
+	if _err != nil {
+		panic("invalid test " + _err.Error()) // bug
 	}
 	prms := url.Values{}
-	if email != nil {
-		sliceVal := []string{*email}
-		prms["email"] = sliceVal
-	}
-	if name != nil {
-		sliceVal := []string{*name}
-		prms["name"] = sliceVal
-	}
-	if passWord != nil {
-		sliceVal := []string{*passWord}
-		prms["passWord"] = sliceVal
-	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	goaCtx := goa.NewContext(goa.WithAction(ctx, "AccountTest"), rw, req, prms)
-	registerCtx, _err := app.NewRegisterAccountContext(goaCtx, req, service)
-	if _err != nil {
-		e, ok := _err.(goa.ServiceError)
-		if !ok {
-			panic("invalid test data " + _err.Error()) // bug
+	loginCtx, __err := app.NewLoginAccountContext(goaCtx, req, service)
+	if __err != nil {
+		_e, _ok := __err.(goa.ServiceError)
+		if !_ok {
+			panic("invalid test data " + __err.Error()) // bug
 		}
-		t.Errorf("unexpected parameter validation error: %+v", e)
-		return nil, nil
+		t.Errorf("unexpected parameter validation error: %+v", _e)
+		return nil
 	}
+	loginCtx.Payload = payload
 
 	// Perform action
-	_err = ctrl.Register(registerCtx)
+	__err = ctrl.Login(loginCtx)
 
 	// Validate response
-	if _err != nil {
-		t.Fatalf("controller returned %+v, logs:\n%s", _err, logBuf.String())
+	if __err != nil {
+		t.Fatalf("controller returned %+v, logs:\n%s", __err, logBuf.String())
 	}
 	if rw.Code != 200 {
 		t.Errorf("invalid response status code: got %+v, expected 200", rw.Code)
 	}
-	var mt *app.GoaExampleAccountRegister
-	if resp != nil {
-		var _ok bool
-		mt, _ok = resp.(*app.GoaExampleAccountRegister)
-		if !_ok {
-			t.Fatalf("invalid response media: got variable of type %T, value %+v, expected instance of app.GoaExampleAccountRegister", resp, resp)
-		}
-		_err = mt.Validate()
-		if _err != nil {
-			t.Errorf("invalid response media type: %s", _err)
-		}
-	}
 
 	// Return results
-	return rw, mt
+	return rw
 }

@@ -21,16 +21,16 @@ var _ = Resource("jwt", func() {
 		Scope("api:access")
 	})
 
-	Action("signin", func() {
+	Action("signIn", func() {
 		Description("Creates a valid JWT")
 		Security(SigninBasicAuth)
-		Routing(POST("/jwt/signin"))
+		Routing(POST("/jwt/sign_in"))
 		Response(NoContent, func() {
 			Headers(func() {
 				Header("Authorization", String, "Generated JWT")
 			})
 		})
-		Response(OK, accountRegister)
+		Response(OK, accountMediaType)
 		Response(Unauthorized, ErrorMedia)
 	})
 
@@ -40,7 +40,7 @@ var _ = Resource("jwt", func() {
 		Params(func() {
 			Param("fail", Boolean, "Force auth failure via JWT validation middleware")
 		})
-		Response(OK, accountOK)
+		Response(OK, accountMediaType)
 		Response(Unauthorized, ErrorMedia)
 	})
 
@@ -48,7 +48,7 @@ var _ = Resource("jwt", func() {
 		Description("This action does not require auth")
 		Routing(GET("/jwt/unsecure"))
 		NoSecurity()
-		Response(OK, accountOK)
+		Response(OK, accountMediaType)
 		Response(Unauthorized, ErrorMedia)
 	})
 })

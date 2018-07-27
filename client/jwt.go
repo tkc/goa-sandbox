@@ -21,7 +21,7 @@ import (
 // SecureJWTPath computes a request path to the secure action of jwt.
 func SecureJWTPath() string {
 
-	return fmt.Sprintf("/api/v1/jwt")
+	return fmt.Sprintf("/jwt")
 }
 
 // This action is secured with the jwt scheme
@@ -42,8 +42,8 @@ func (c *Client) NewSecureJWTRequest(ctx context.Context, path string, fail *boo
 	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
 	values := u.Query()
 	if fail != nil {
-		tmp11 := strconv.FormatBool(*fail)
-		values.Set("fail", tmp11)
+		tmp9 := strconv.FormatBool(*fail)
+		values.Set("fail", tmp9)
 	}
 	u.RawQuery = values.Encode()
 	req, err := http.NewRequest("GET", u.String(), nil)
@@ -58,23 +58,23 @@ func (c *Client) NewSecureJWTRequest(ctx context.Context, path string, fail *boo
 	return req, nil
 }
 
-// SigninJWTPath computes a request path to the signin action of jwt.
-func SigninJWTPath() string {
+// SignInJWTPath computes a request path to the signIn action of jwt.
+func SignInJWTPath() string {
 
-	return fmt.Sprintf("/api/v1/jwt/signin")
+	return fmt.Sprintf("/jwt/sign_in")
 }
 
 // Creates a valid JWT
-func (c *Client) SigninJWT(ctx context.Context, path string) (*http.Response, error) {
-	req, err := c.NewSigninJWTRequest(ctx, path)
+func (c *Client) SignInJWT(ctx context.Context, path string) (*http.Response, error) {
+	req, err := c.NewSignInJWTRequest(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	return c.Client.Do(ctx, req)
 }
 
-// NewSigninJWTRequest create the request corresponding to the signin action endpoint of the jwt resource.
-func (c *Client) NewSigninJWTRequest(ctx context.Context, path string) (*http.Request, error) {
+// NewSignInJWTRequest create the request corresponding to the signIn action endpoint of the jwt resource.
+func (c *Client) NewSignInJWTRequest(ctx context.Context, path string) (*http.Request, error) {
 	scheme := c.Scheme
 	if scheme == "" {
 		scheme = "http"
@@ -95,7 +95,7 @@ func (c *Client) NewSigninJWTRequest(ctx context.Context, path string) (*http.Re
 // UnsecureJWTPath computes a request path to the unsecure action of jwt.
 func UnsecureJWTPath() string {
 
-	return fmt.Sprintf("/api/v1/jwt/unsecure")
+	return fmt.Sprintf("/jwt/unsecure")
 }
 
 // This action does not require auth

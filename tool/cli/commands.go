@@ -13,6 +13,7 @@ package cli
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/goadesign/goa"
 	goaclient "github.com/goadesign/goa/client"
 	uuid "github.com/goadesign/goa/uuid"
@@ -28,27 +29,21 @@ import (
 type (
 	// CurrentUserAccountCommand is the command line data structure for the currentUser action of account
 	CurrentUserAccountCommand struct {
-		Token       string
+		PrettyPrint bool
+	}
+
+	// ListAccountCommand is the command line data structure for the list action of account
+	ListAccountCommand struct {
+		Payload     string
+		ContentType string
+		Ids         []int
 		PrettyPrint bool
 	}
 
 	// LoginAccountCommand is the command line data structure for the login action of account
 	LoginAccountCommand struct {
-		Email       string
-		PassWord    string
-		PrettyPrint bool
-	}
-
-	// LogoutAccountCommand is the command line data structure for the logout action of account
-	LogoutAccountCommand struct {
-		PrettyPrint bool
-	}
-
-	// RegisterAccountCommand is the command line data structure for the register action of account
-	RegisterAccountCommand struct {
-		Email       string
-		Name        string
-		PassWord    string
+		Payload     string
+		ContentType string
 		PrettyPrint bool
 	}
 
@@ -59,8 +54,8 @@ type (
 		PrettyPrint bool
 	}
 
-	// SigninJWTCommand is the command line data structure for the signin action of jwt
-	SigninJWTCommand struct {
+	// SignInJWTCommand is the command line data structure for the signIn action of jwt
+	SignInJWTCommand struct {
 		PrettyPrint bool
 	}
 
@@ -79,7 +74,7 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	}
 	tmp1 := new(CurrentUserAccountCommand)
 	sub = &cobra.Command{
-		Use:   `account ["/api/v1/currentuser"]`,
+		Use:   `account ["/current_user"]`,
 		Short: ``,
 		RunE:  func(cmd *cobra.Command, args []string) error { return tmp1.Run(c, args) },
 	}
@@ -88,41 +83,59 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	command.AddCommand(sub)
 	app.AddCommand(command)
 	command = &cobra.Command{
-		Use:   "login",
+		Use:   "list",
 		Short: ``,
 	}
-	tmp2 := new(LoginAccountCommand)
+	tmp2 := new(ListAccountCommand)
 	sub = &cobra.Command{
-		Use:   `account ["/api/v1/login"]`,
+		Use:   `account ["/list"]`,
 		Short: ``,
-		RunE:  func(cmd *cobra.Command, args []string) error { return tmp2.Run(c, args) },
+		Long: `
+
+Payload example:
+
+{
+   "ids": [
+      "Ut rerum quis velit debitis."
+   ],
+   "offset": 1858008479944432000
+}`,
+		RunE: func(cmd *cobra.Command, args []string) error { return tmp2.Run(c, args) },
 	}
 	tmp2.RegisterFlags(sub, c)
 	sub.PersistentFlags().BoolVar(&tmp2.PrettyPrint, "pp", false, "Pretty print response body")
 	command.AddCommand(sub)
 	app.AddCommand(command)
 	command = &cobra.Command{
-		Use:   "logout",
+		Use:   "login",
 		Short: ``,
 	}
-	tmp3 := new(LogoutAccountCommand)
+	tmp3 := new(LoginAccountCommand)
 	sub = &cobra.Command{
-		Use:   `account ["/api/v1/logout"]`,
+		Use:   `account ["/login"]`,
 		Short: ``,
-		RunE:  func(cmd *cobra.Command, args []string) error { return tmp3.Run(c, args) },
+		Long: `
+
+Payload example:
+
+{
+   "email": "jesus@gutmann.net",
+   "password": "poz0nciae7"
+}`,
+		RunE: func(cmd *cobra.Command, args []string) error { return tmp3.Run(c, args) },
 	}
 	tmp3.RegisterFlags(sub, c)
 	sub.PersistentFlags().BoolVar(&tmp3.PrettyPrint, "pp", false, "Pretty print response body")
 	command.AddCommand(sub)
 	app.AddCommand(command)
 	command = &cobra.Command{
-		Use:   "register",
-		Short: ``,
+		Use:   "secure",
+		Short: `This action is secured with the jwt scheme`,
 	}
-	tmp4 := new(RegisterAccountCommand)
+	tmp4 := new(SecureJWTCommand)
 	sub = &cobra.Command{
-		Use:   `account ["/api/v1/register"]`,
-		Short: ``,
+		Use:   `jwt ["/jwt"]`,
+		Short: `This resource uses JWT to secure its endpoints`,
 		RunE:  func(cmd *cobra.Command, args []string) error { return tmp4.Run(c, args) },
 	}
 	tmp4.RegisterFlags(sub, c)
@@ -130,12 +143,12 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	command.AddCommand(sub)
 	app.AddCommand(command)
 	command = &cobra.Command{
-		Use:   "secure",
-		Short: `This action is secured with the jwt scheme`,
+		Use:   "sign-in",
+		Short: `Creates a valid JWT`,
 	}
-	tmp5 := new(SecureJWTCommand)
+	tmp5 := new(SignInJWTCommand)
 	sub = &cobra.Command{
-		Use:   `jwt ["/api/v1/jwt"]`,
+		Use:   `jwt ["/jwt/sign_in"]`,
 		Short: `This resource uses JWT to secure its endpoints`,
 		RunE:  func(cmd *cobra.Command, args []string) error { return tmp5.Run(c, args) },
 	}
@@ -144,31 +157,17 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	command.AddCommand(sub)
 	app.AddCommand(command)
 	command = &cobra.Command{
-		Use:   "signin",
-		Short: `Creates a valid JWT`,
+		Use:   "unsecure",
+		Short: `This action does not require auth`,
 	}
-	tmp6 := new(SigninJWTCommand)
+	tmp6 := new(UnsecureJWTCommand)
 	sub = &cobra.Command{
-		Use:   `jwt ["/api/v1/jwt/signin"]`,
+		Use:   `jwt ["/jwt/unsecure"]`,
 		Short: `This resource uses JWT to secure its endpoints`,
 		RunE:  func(cmd *cobra.Command, args []string) error { return tmp6.Run(c, args) },
 	}
 	tmp6.RegisterFlags(sub, c)
 	sub.PersistentFlags().BoolVar(&tmp6.PrettyPrint, "pp", false, "Pretty print response body")
-	command.AddCommand(sub)
-	app.AddCommand(command)
-	command = &cobra.Command{
-		Use:   "unsecure",
-		Short: `This action does not require auth`,
-	}
-	tmp7 := new(UnsecureJWTCommand)
-	sub = &cobra.Command{
-		Use:   `jwt ["/api/v1/jwt/unsecure"]`,
-		Short: `This resource uses JWT to secure its endpoints`,
-		RunE:  func(cmd *cobra.Command, args []string) error { return tmp7.Run(c, args) },
-	}
-	tmp7.RegisterFlags(sub, c)
-	sub.PersistentFlags().BoolVar(&tmp7.PrettyPrint, "pp", false, "Pretty print response body")
 	command.AddCommand(sub)
 	app.AddCommand(command)
 }
@@ -332,20 +331,11 @@ func (cmd *CurrentUserAccountCommand) Run(c *client.Client, args []string) error
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		path = "/api/v1/currentuser"
+		path = "/current_user"
 	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)
-	var tmp8 *uuid.UUID
-	if cmd.Token != "" {
-		var err error
-		tmp8, err = uuidVal(cmd.Token)
-		if err != nil {
-			goa.LogError(ctx, "failed to parse flag into *uuid.UUID value", "flag", "--token", "err", err)
-			return err
-		}
-	}
-	resp, err := c.CurrentUserAccount(ctx, path, tmp8)
+	resp, err := c.CurrentUserAccount(ctx, path)
 	if err != nil {
 		goa.LogError(ctx, "failed", "err", err)
 		return err
@@ -357,8 +347,41 @@ func (cmd *CurrentUserAccountCommand) Run(c *client.Client, args []string) error
 
 // RegisterFlags registers the command flags with the command line.
 func (cmd *CurrentUserAccountCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
-	var token string
-	cc.Flags().StringVar(&cmd.Token, "token", token, ``)
+}
+
+// Run makes the HTTP request corresponding to the ListAccountCommand command.
+func (cmd *ListAccountCommand) Run(c *client.Client, args []string) error {
+	var path string
+	if len(args) > 0 {
+		path = args[0]
+	} else {
+		path = "/list"
+	}
+	var payload client.AccountListPayload
+	if cmd.Payload != "" {
+		err := json.Unmarshal([]byte(cmd.Payload), &payload)
+		if err != nil {
+			return fmt.Errorf("failed to deserialize payload: %s", err)
+		}
+	}
+	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
+	ctx := goa.WithLogger(context.Background(), logger)
+	resp, err := c.ListAccount(ctx, path, &payload, cmd.Ids, cmd.ContentType)
+	if err != nil {
+		goa.LogError(ctx, "failed", "err", err)
+		return err
+	}
+
+	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
+	return nil
+}
+
+// RegisterFlags registers the command flags with the command line.
+func (cmd *ListAccountCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
+	cc.Flags().StringVar(&cmd.Payload, "payload", "", "Request body encoded in JSON")
+	cc.Flags().StringVar(&cmd.ContentType, "content", "", "Request content type override, e.g. 'application/x-www-form-urlencoded'")
+	var ids []int
+	cc.Flags().IntSliceVar(&cmd.Ids, "ids", ids, ``)
 }
 
 // Run makes the HTTP request corresponding to the LoginAccountCommand command.
@@ -367,11 +390,18 @@ func (cmd *LoginAccountCommand) Run(c *client.Client, args []string) error {
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		path = "/api/v1/login"
+		path = "/login"
+	}
+	var payload client.AccountPayload
+	if cmd.Payload != "" {
+		err := json.Unmarshal([]byte(cmd.Payload), &payload)
+		if err != nil {
+			return fmt.Errorf("failed to deserialize payload: %s", err)
+		}
 	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)
-	resp, err := c.LoginAccount(ctx, path, stringFlagVal("email", cmd.Email), stringFlagVal("passWord", cmd.PassWord))
+	resp, err := c.LoginAccount(ctx, path, &payload, cmd.ContentType)
 	if err != nil {
 		goa.LogError(ctx, "failed", "err", err)
 		return err
@@ -383,64 +413,8 @@ func (cmd *LoginAccountCommand) Run(c *client.Client, args []string) error {
 
 // RegisterFlags registers the command flags with the command line.
 func (cmd *LoginAccountCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
-	var email string
-	cc.Flags().StringVar(&cmd.Email, "email", email, ``)
-	var passWord string
-	cc.Flags().StringVar(&cmd.PassWord, "passWord", passWord, ``)
-}
-
-// Run makes the HTTP request corresponding to the LogoutAccountCommand command.
-func (cmd *LogoutAccountCommand) Run(c *client.Client, args []string) error {
-	var path string
-	if len(args) > 0 {
-		path = args[0]
-	} else {
-		path = "/api/v1/logout"
-	}
-	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
-	ctx := goa.WithLogger(context.Background(), logger)
-	resp, err := c.LogoutAccount(ctx, path)
-	if err != nil {
-		goa.LogError(ctx, "failed", "err", err)
-		return err
-	}
-
-	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
-	return nil
-}
-
-// RegisterFlags registers the command flags with the command line.
-func (cmd *LogoutAccountCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
-}
-
-// Run makes the HTTP request corresponding to the RegisterAccountCommand command.
-func (cmd *RegisterAccountCommand) Run(c *client.Client, args []string) error {
-	var path string
-	if len(args) > 0 {
-		path = args[0]
-	} else {
-		path = "/api/v1/register"
-	}
-	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
-	ctx := goa.WithLogger(context.Background(), logger)
-	resp, err := c.RegisterAccount(ctx, path, stringFlagVal("email", cmd.Email), stringFlagVal("name", cmd.Name), stringFlagVal("passWord", cmd.PassWord))
-	if err != nil {
-		goa.LogError(ctx, "failed", "err", err)
-		return err
-	}
-
-	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
-	return nil
-}
-
-// RegisterFlags registers the command flags with the command line.
-func (cmd *RegisterAccountCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
-	var email string
-	cc.Flags().StringVar(&cmd.Email, "email", email, ``)
-	var name string
-	cc.Flags().StringVar(&cmd.Name, "name", name, ``)
-	var passWord string
-	cc.Flags().StringVar(&cmd.PassWord, "passWord", passWord, ``)
+	cc.Flags().StringVar(&cmd.Payload, "payload", "", "Request body encoded in JSON")
+	cc.Flags().StringVar(&cmd.ContentType, "content", "", "Request content type override, e.g. 'application/x-www-form-urlencoded'")
 }
 
 // Run makes the HTTP request corresponding to the SecureJWTCommand command.
@@ -449,20 +423,20 @@ func (cmd *SecureJWTCommand) Run(c *client.Client, args []string) error {
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		path = "/api/v1/jwt"
+		path = "/jwt"
 	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)
-	var tmp9 *bool
+	var tmp7 *bool
 	if cmd.Fail != "" {
 		var err error
-		tmp9, err = boolVal(cmd.Fail)
+		tmp7, err = boolVal(cmd.Fail)
 		if err != nil {
 			goa.LogError(ctx, "failed to parse flag into *bool value", "flag", "--fail", "err", err)
 			return err
 		}
 	}
-	resp, err := c.SecureJWT(ctx, path, tmp9)
+	resp, err := c.SecureJWT(ctx, path, tmp7)
 	if err != nil {
 		goa.LogError(ctx, "failed", "err", err)
 		return err
@@ -478,17 +452,17 @@ func (cmd *SecureJWTCommand) RegisterFlags(cc *cobra.Command, c *client.Client) 
 	cc.Flags().StringVar(&cmd.Fail, "fail", fail, `Force auth failure via JWT validation middleware`)
 }
 
-// Run makes the HTTP request corresponding to the SigninJWTCommand command.
-func (cmd *SigninJWTCommand) Run(c *client.Client, args []string) error {
+// Run makes the HTTP request corresponding to the SignInJWTCommand command.
+func (cmd *SignInJWTCommand) Run(c *client.Client, args []string) error {
 	var path string
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		path = "/api/v1/jwt/signin"
+		path = "/jwt/sign_in"
 	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)
-	resp, err := c.SigninJWT(ctx, path)
+	resp, err := c.SignInJWT(ctx, path)
 	if err != nil {
 		goa.LogError(ctx, "failed", "err", err)
 		return err
@@ -499,7 +473,7 @@ func (cmd *SigninJWTCommand) Run(c *client.Client, args []string) error {
 }
 
 // RegisterFlags registers the command flags with the command line.
-func (cmd *SigninJWTCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
+func (cmd *SignInJWTCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
 }
 
 // Run makes the HTTP request corresponding to the UnsecureJWTCommand command.
@@ -508,7 +482,7 @@ func (cmd *UnsecureJWTCommand) Run(c *client.Client, args []string) error {
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		path = "/api/v1/jwt/unsecure"
+		path = "/jwt/unsecure"
 	}
 	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
 	ctx := goa.WithLogger(context.Background(), logger)

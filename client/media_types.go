@@ -22,120 +22,60 @@ func (c *Client) DecodeErrorResponse(resp *http.Response) (*goa.ErrorResponse, e
 	return &decoded, err
 }
 
-// GoaExampleAccountCurrentuser media type (default view)
+// GoaExampleAccount media type (default view)
 //
-// Identifier: application/vnd.goa.example.account.currentuser+json; view=default
-type GoaExampleAccountCurrentuser struct {
+// Identifier: application/vnd.goa.example.account+json; view=default
+type GoaExampleAccount struct {
 	// Name of user
-	Name string `form:"name" json:"name" yaml:"name" xml:"name"`
-	// Unique User ID
-	UserID int `form:"userId" json:"userId" yaml:"userId" xml:"userId"`
-}
-
-// Validate validates the GoaExampleAccountCurrentuser media type instance.
-func (mt *GoaExampleAccountCurrentuser) Validate() (err error) {
-
-	if mt.Name == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "name"))
-	}
-	return
-}
-
-// DecodeGoaExampleAccountCurrentuser decodes the GoaExampleAccountCurrentuser instance encoded in resp body.
-func (c *Client) DecodeGoaExampleAccountCurrentuser(resp *http.Response) (*GoaExampleAccountCurrentuser, error) {
-	var decoded GoaExampleAccountCurrentuser
-	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
-	return &decoded, err
-}
-
-// GoaExampleAccountLogin media type (default view)
-//
-// Identifier: application/vnd.goa.example.account.login+json; view=default
-type GoaExampleAccountLogin struct {
-	// Name of user
-	Name string `form:"name" json:"name" yaml:"name" xml:"name"`
+	Name *string `form:"name,omitempty" json:"name,omitempty" yaml:"name,omitempty" xml:"name,omitempty"`
 	// Unique User Token
-	Token string `form:"token" json:"token" yaml:"token" xml:"token"`
+	Token *string `form:"token,omitempty" json:"token,omitempty" yaml:"token,omitempty" xml:"token,omitempty"`
 	// Unique User ID
 	UserID int `form:"userId" json:"userId" yaml:"userId" xml:"userId"`
 }
 
-// Validate validates the GoaExampleAccountLogin media type instance.
-func (mt *GoaExampleAccountLogin) Validate() (err error) {
-
-	if mt.Token == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "token"))
-	}
-	if mt.Name == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "name"))
-	}
-	return
-}
-
-// DecodeGoaExampleAccountLogin decodes the GoaExampleAccountLogin instance encoded in resp body.
-func (c *Client) DecodeGoaExampleAccountLogin(resp *http.Response) (*GoaExampleAccountLogin, error) {
-	var decoded GoaExampleAccountLogin
-	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
-	return &decoded, err
-}
-
-// GoaExampleAccountLogout media type (default view)
+// GoaExampleAccount media type (tiny view)
 //
-// Identifier: application/vnd.goa.example.account.logout+json; view=default
-type GoaExampleAccountLogout struct {
-	// action status
-	Status *bool `form:"status,omitempty" json:"status,omitempty" yaml:"status,omitempty" xml:"status,omitempty"`
-}
-
-// DecodeGoaExampleAccountLogout decodes the GoaExampleAccountLogout instance encoded in resp body.
-func (c *Client) DecodeGoaExampleAccountLogout(resp *http.Response) (*GoaExampleAccountLogout, error) {
-	var decoded GoaExampleAccountLogout
-	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
-	return &decoded, err
-}
-
-// GoaExampleAccountOk media type (default view)
-//
-// Identifier: application/vnd.goa.example.account.ok+json; view=default
-type GoaExampleAccountOK struct {
-	// action status
-	Status *bool `form:"status,omitempty" json:"status,omitempty" yaml:"status,omitempty" xml:"status,omitempty"`
-}
-
-// DecodeGoaExampleAccountOK decodes the GoaExampleAccountOK instance encoded in resp body.
-func (c *Client) DecodeGoaExampleAccountOK(resp *http.Response) (*GoaExampleAccountOK, error) {
-	var decoded GoaExampleAccountOK
-	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
-	return &decoded, err
-}
-
-// GoaExampleAccountRegister media type (default view)
-//
-// Identifier: application/vnd.goa.example.account.register+json; view=default
-type GoaExampleAccountRegister struct {
-	// Name of user
-	Name string `form:"name" json:"name" yaml:"name" xml:"name"`
-	// Unique User Token
-	Token string `form:"token" json:"token" yaml:"token" xml:"token"`
+// Identifier: application/vnd.goa.example.account+json; view=tiny
+type GoaExampleAccountTiny struct {
 	// Unique User ID
 	UserID int `form:"userId" json:"userId" yaml:"userId" xml:"userId"`
 }
 
-// Validate validates the GoaExampleAccountRegister media type instance.
-func (mt *GoaExampleAccountRegister) Validate() (err error) {
-
-	if mt.Token == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "token"))
-	}
-	if mt.Name == "" {
-		err = goa.MergeErrors(err, goa.MissingAttributeError(`response`, "name"))
-	}
-	return
-}
-
-// DecodeGoaExampleAccountRegister decodes the GoaExampleAccountRegister instance encoded in resp body.
-func (c *Client) DecodeGoaExampleAccountRegister(resp *http.Response) (*GoaExampleAccountRegister, error) {
-	var decoded GoaExampleAccountRegister
+// DecodeGoaExampleAccount decodes the GoaExampleAccount instance encoded in resp body.
+func (c *Client) DecodeGoaExampleAccount(resp *http.Response) (*GoaExampleAccount, error) {
+	var decoded GoaExampleAccount
 	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
 	return &decoded, err
+}
+
+// DecodeGoaExampleAccountTiny decodes the GoaExampleAccountTiny instance encoded in resp body.
+func (c *Client) DecodeGoaExampleAccountTiny(resp *http.Response) (*GoaExampleAccountTiny, error) {
+	var decoded GoaExampleAccountTiny
+	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
+	return &decoded, err
+}
+
+// GoaExampleAccountCollection is the media type for an array of GoaExampleAccount (default view)
+//
+// Identifier: application/vnd.goa.example.account+json; type=collection; view=default
+type GoaExampleAccountCollection []*GoaExampleAccount
+
+// GoaExampleAccountCollection is the media type for an array of GoaExampleAccount (tiny view)
+//
+// Identifier: application/vnd.goa.example.account+json; type=collection; view=tiny
+type GoaExampleAccountTinyCollection []*GoaExampleAccountTiny
+
+// DecodeGoaExampleAccountCollection decodes the GoaExampleAccountCollection instance encoded in resp body.
+func (c *Client) DecodeGoaExampleAccountCollection(resp *http.Response) (GoaExampleAccountCollection, error) {
+	var decoded GoaExampleAccountCollection
+	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
+	return decoded, err
+}
+
+// DecodeGoaExampleAccountTinyCollection decodes the GoaExampleAccountTinyCollection instance encoded in resp body.
+func (c *Client) DecodeGoaExampleAccountTinyCollection(resp *http.Response) (GoaExampleAccountTinyCollection, error) {
+	var decoded GoaExampleAccountTinyCollection
+	err := c.Decoder.Decode(&decoded, resp.Body, resp.Header.Get("Content-Type"))
+	return decoded, err
 }

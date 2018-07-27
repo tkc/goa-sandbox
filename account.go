@@ -21,9 +21,20 @@ func (c *AccountController) CurrentUser(ctx *app.CurrentUserAccountContext) erro
 
 	// Put your logic here
 
-	res := &app.GoaExampleAccountCurrentuser{}
+	res := &app.GoaExampleAccount{}
 	return ctx.OK(res)
 	// AccountController_CurrentUser: end_implement
+}
+
+// List runs the list action.
+func (c *AccountController) List(ctx *app.ListAccountContext) error {
+	// AccountController_List: start_implement
+
+	// Put your logic here
+
+	res := app.GoaExampleAccountCollection{}
+	return ctx.OK(res)
+	// AccountController_List: end_implement
 }
 
 // Login runs the login action.
@@ -32,29 +43,6 @@ func (c *AccountController) Login(ctx *app.LoginAccountContext) error {
 
 	// Put your logic here
 
-	res := &app.GoaExampleAccountLogin{}
-	return ctx.OK(res)
+	return nil
 	// AccountController_Login: end_implement
-}
-
-// Logout runs the logout action.
-func (c *AccountController) Logout(ctx *app.LogoutAccountContext) error {
-	// AccountController_Logout: start_implement
-
-	// Put your logic here
-
-	res := &app.GoaExampleAccountLogout{}
-	return ctx.OK(res)
-	// AccountController_Logout: end_implement
-}
-
-// Register runs the register action.
-func (c *AccountController) Register(ctx *app.RegisterAccountContext) error {
-	// AccountController_Register: start_implement
-
-	// Put your logic here
-
-	res := &app.GoaExampleAccountRegister{}
-	return ctx.OK(res)
-	// AccountController_Register: end_implement
 }

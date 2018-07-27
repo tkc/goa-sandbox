@@ -7,49 +7,30 @@ import (
 
 var _ = Resource("account", func() {
 
-	Action("register", func() {
-		Routing(POST("register"))
-		Description("")
-		Params(func() {
-			Param("name", String, "")
-			Param("email", String, "")
-			Param("passWord", String, "")
-		})
-		//Required("name")
-		//Required("email")
-		//Required("passWord")
-		Response(OK, accountRegister)
-		Response(BadRequest, ErrorMedia)
-	})
-
 	Action("login", func() {
 		Routing(POST("login"))
 		Description("")
-		Params(func() {
-			Param("email", String, "")
-			Param("passWord", String, "")
-		})
-		//Required("email")
-		//Required("passWord")
-		Response(OK, accountLogIn)
-		Response(BadRequest, ErrorMedia)
-	})
-
-	Action("logout", func() {
-		Routing(POST("logout"))
-		Description("")
-		Response(OK, accountLogOut)
+		Payload(AccountPayload)
+		Response(OK, AccountPayload)
 		Response(BadRequest, ErrorMedia)
 	})
 
 	Action("currentUser", func() {
-		Routing(GET("currentuser"))
+		Routing(GET("current_user"))
 		Description("")
-		Params(func() {
-			Param("token", UUID, "")
-		})
-		//Required("token")
-		Response(OK, accountCurrentUser)
+		Response(OK, accountMediaType)
 		Response(BadRequest, ErrorMedia)
 	})
+
+	Action("list", func() {
+		Routing(GET("list"))
+		Description("")
+		Params(func() {
+			Param("ids", ArrayOf(Integer))
+		})
+		Payload(AccountListPayload)
+		Response(OK, func() { Media(CollectionOf(accountMediaType), "default") })
+		Response(BadRequest, ErrorMedia)
+	})
+
 })

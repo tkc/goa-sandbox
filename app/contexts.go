@@ -13,7 +13,6 @@ package app
 import (
 	"context"
 	"github.com/goadesign/goa"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
 )
@@ -23,7 +22,6 @@ type CurrentUserAccountContext struct {
 	context.Context
 	*goa.ResponseData
 	*goa.RequestData
-	Token *uuid.UUID
 }
 
 // NewCurrentUserAccountContext parses the incoming request URL and body, performs validations and creates the
@@ -35,23 +33,21 @@ func NewCurrentUserAccountContext(ctx context.Context, r *http.Request, service 
 	req := goa.ContextRequest(ctx)
 	req.Request = r
 	rctx := CurrentUserAccountContext{Context: ctx, ResponseData: resp, RequestData: req}
-	paramToken := req.Params["token"]
-	if len(paramToken) > 0 {
-		rawToken := paramToken[0]
-		if token, err2 := uuid.FromString(rawToken); err2 == nil {
-			tmp1 := &token
-			rctx.Token = tmp1
-		} else {
-			err = goa.MergeErrors(err, goa.InvalidParamTypeError("token", rawToken, "uuid"))
-		}
-	}
 	return &rctx, err
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *CurrentUserAccountContext) OK(r *GoaExampleAccountCurrentuser) error {
+func (ctx *CurrentUserAccountContext) OK(r *GoaExampleAccount) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.currentuser+json")
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
+	}
+	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// OKTiny sends a HTTP response with status code 200.
+func (ctx *CurrentUserAccountContext) OKTiny(r *GoaExampleAccountTiny) error {
+	if ctx.ResponseData.Header().Get("Content-Type") == "" {
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
 	}
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
@@ -64,13 +60,64 @@ func (ctx *CurrentUserAccountContext) BadRequest(r error) error {
 	return ctx.ResponseData.Service.Send(ctx.Context, 400, r)
 }
 
+// ListAccountContext provides the account list action context.
+type ListAccountContext struct {
+	context.Context
+	*goa.ResponseData
+	*goa.RequestData
+	Ids     []int
+	Payload *AccountListPayload
+}
+
+// NewListAccountContext parses the incoming request URL and body, performs validations and creates the
+// context used by the account controller list action.
+func NewListAccountContext(ctx context.Context, r *http.Request, service *goa.Service) (*ListAccountContext, error) {
+	var err error
+	resp := goa.ContextResponse(ctx)
+	resp.Service = service
+	req := goa.ContextRequest(ctx)
+	req.Request = r
+	rctx := ListAccountContext{Context: ctx, ResponseData: resp, RequestData: req}
+	paramIds := req.Params["ids"]
+	if len(paramIds) > 0 {
+		params := make([]int, len(paramIds))
+		for i, rawIds := range paramIds {
+			if ids, err2 := strconv.Atoi(rawIds); err2 == nil {
+				params[i] = ids
+			} else {
+				err = goa.MergeErrors(err, goa.InvalidParamTypeError("ids", rawIds, "integer"))
+			}
+		}
+		rctx.Ids = params
+	}
+	return &rctx, err
+}
+
+// OK sends a HTTP response with status code 200.
+func (ctx *ListAccountContext) OK(r GoaExampleAccountCollection) error {
+	if ctx.ResponseData.Header().Get("Content-Type") == "" {
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json; type=collection")
+	}
+	if r == nil {
+		r = GoaExampleAccountCollection{}
+	}
+	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// BadRequest sends a HTTP response with status code 400.
+func (ctx *ListAccountContext) BadRequest(r error) error {
+	if ctx.ResponseData.Header().Get("Content-Type") == "" {
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
+	}
+	return ctx.ResponseData.Service.Send(ctx.Context, 400, r)
+}
+
 // LoginAccountContext provides the account login action context.
 type LoginAccountContext struct {
 	context.Context
 	*goa.ResponseData
 	*goa.RequestData
-	Email    *string
-	PassWord *string
+	Payload *AccountPayload
 }
 
 // NewLoginAccountContext parses the incoming request URL and body, performs validations and creates the
@@ -82,117 +129,19 @@ func NewLoginAccountContext(ctx context.Context, r *http.Request, service *goa.S
 	req := goa.ContextRequest(ctx)
 	req.Request = r
 	rctx := LoginAccountContext{Context: ctx, ResponseData: resp, RequestData: req}
-	paramEmail := req.Params["email"]
-	if len(paramEmail) > 0 {
-		rawEmail := paramEmail[0]
-		rctx.Email = &rawEmail
-	}
-	paramPassWord := req.Params["passWord"]
-	if len(paramPassWord) > 0 {
-		rawPassWord := paramPassWord[0]
-		rctx.PassWord = &rawPassWord
-	}
 	return &rctx, err
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *LoginAccountContext) OK(r *GoaExampleAccountLogin) error {
+func (ctx *LoginAccountContext) OK(r *AccountPayload) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.login+json")
+		ctx.ResponseData.Header().Set("Content-Type", "text/plain")
 	}
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
 
 // BadRequest sends a HTTP response with status code 400.
 func (ctx *LoginAccountContext) BadRequest(r error) error {
-	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
-	}
-	return ctx.ResponseData.Service.Send(ctx.Context, 400, r)
-}
-
-// LogoutAccountContext provides the account logout action context.
-type LogoutAccountContext struct {
-	context.Context
-	*goa.ResponseData
-	*goa.RequestData
-}
-
-// NewLogoutAccountContext parses the incoming request URL and body, performs validations and creates the
-// context used by the account controller logout action.
-func NewLogoutAccountContext(ctx context.Context, r *http.Request, service *goa.Service) (*LogoutAccountContext, error) {
-	var err error
-	resp := goa.ContextResponse(ctx)
-	resp.Service = service
-	req := goa.ContextRequest(ctx)
-	req.Request = r
-	rctx := LogoutAccountContext{Context: ctx, ResponseData: resp, RequestData: req}
-	return &rctx, err
-}
-
-// OK sends a HTTP response with status code 200.
-func (ctx *LogoutAccountContext) OK(r *GoaExampleAccountLogout) error {
-	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.logout+json")
-	}
-	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
-}
-
-// BadRequest sends a HTTP response with status code 400.
-func (ctx *LogoutAccountContext) BadRequest(r error) error {
-	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
-	}
-	return ctx.ResponseData.Service.Send(ctx.Context, 400, r)
-}
-
-// RegisterAccountContext provides the account register action context.
-type RegisterAccountContext struct {
-	context.Context
-	*goa.ResponseData
-	*goa.RequestData
-	Email    *string
-	Name     *string
-	PassWord *string
-}
-
-// NewRegisterAccountContext parses the incoming request URL and body, performs validations and creates the
-// context used by the account controller register action.
-func NewRegisterAccountContext(ctx context.Context, r *http.Request, service *goa.Service) (*RegisterAccountContext, error) {
-	var err error
-	resp := goa.ContextResponse(ctx)
-	resp.Service = service
-	req := goa.ContextRequest(ctx)
-	req.Request = r
-	rctx := RegisterAccountContext{Context: ctx, ResponseData: resp, RequestData: req}
-	paramEmail := req.Params["email"]
-	if len(paramEmail) > 0 {
-		rawEmail := paramEmail[0]
-		rctx.Email = &rawEmail
-	}
-	paramName := req.Params["name"]
-	if len(paramName) > 0 {
-		rawName := paramName[0]
-		rctx.Name = &rawName
-	}
-	paramPassWord := req.Params["passWord"]
-	if len(paramPassWord) > 0 {
-		rawPassWord := paramPassWord[0]
-		rctx.PassWord = &rawPassWord
-	}
-	return &rctx, err
-}
-
-// OK sends a HTTP response with status code 200.
-func (ctx *RegisterAccountContext) OK(r *GoaExampleAccountRegister) error {
-	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.register+json")
-	}
-	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
-}
-
-// BadRequest sends a HTTP response with status code 400.
-func (ctx *RegisterAccountContext) BadRequest(r error) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
 		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
 	}
@@ -230,9 +179,17 @@ func NewSecureJWTContext(ctx context.Context, r *http.Request, service *goa.Serv
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *SecureJWTContext) OK(r *GoaExampleAccountOK) error {
+func (ctx *SecureJWTContext) OK(r *GoaExampleAccount) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.ok+json")
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
+	}
+	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// OKTiny sends a HTTP response with status code 200.
+func (ctx *SecureJWTContext) OKTiny(r *GoaExampleAccountTiny) error {
+	if ctx.ResponseData.Header().Get("Content-Type") == "" {
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
 	}
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
@@ -245,41 +202,49 @@ func (ctx *SecureJWTContext) Unauthorized(r error) error {
 	return ctx.ResponseData.Service.Send(ctx.Context, 401, r)
 }
 
-// SigninJWTContext provides the jwt signin action context.
-type SigninJWTContext struct {
+// SignInJWTContext provides the jwt signIn action context.
+type SignInJWTContext struct {
 	context.Context
 	*goa.ResponseData
 	*goa.RequestData
 }
 
-// NewSigninJWTContext parses the incoming request URL and body, performs validations and creates the
-// context used by the jwt controller signin action.
-func NewSigninJWTContext(ctx context.Context, r *http.Request, service *goa.Service) (*SigninJWTContext, error) {
+// NewSignInJWTContext parses the incoming request URL and body, performs validations and creates the
+// context used by the jwt controller signIn action.
+func NewSignInJWTContext(ctx context.Context, r *http.Request, service *goa.Service) (*SignInJWTContext, error) {
 	var err error
 	resp := goa.ContextResponse(ctx)
 	resp.Service = service
 	req := goa.ContextRequest(ctx)
 	req.Request = r
-	rctx := SigninJWTContext{Context: ctx, ResponseData: resp, RequestData: req}
+	rctx := SignInJWTContext{Context: ctx, ResponseData: resp, RequestData: req}
 	return &rctx, err
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *SigninJWTContext) OK(r *GoaExampleAccountRegister) error {
+func (ctx *SignInJWTContext) OK(r *GoaExampleAccount) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.register+json")
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
+	}
+	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// OKTiny sends a HTTP response with status code 200.
+func (ctx *SignInJWTContext) OKTiny(r *GoaExampleAccountTiny) error {
+	if ctx.ResponseData.Header().Get("Content-Type") == "" {
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
 	}
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
 
 // NoContent sends a HTTP response with status code 204.
-func (ctx *SigninJWTContext) NoContent() error {
+func (ctx *SignInJWTContext) NoContent() error {
 	ctx.ResponseData.WriteHeader(204)
 	return nil
 }
 
 // Unauthorized sends a HTTP response with status code 401.
-func (ctx *SigninJWTContext) Unauthorized(r error) error {
+func (ctx *SignInJWTContext) Unauthorized(r error) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
 		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
 	}
@@ -306,9 +271,17 @@ func NewUnsecureJWTContext(ctx context.Context, r *http.Request, service *goa.Se
 }
 
 // OK sends a HTTP response with status code 200.
-func (ctx *UnsecureJWTContext) OK(r *GoaExampleAccountOK) error {
+func (ctx *UnsecureJWTContext) OK(r *GoaExampleAccount) error {
 	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account.ok+json")
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
+	}
+	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
+}
+
+// OKTiny sends a HTTP response with status code 200.
+func (ctx *UnsecureJWTContext) OKTiny(r *GoaExampleAccountTiny) error {
+	if ctx.ResponseData.Header().Get("Content-Type") == "" {
+		ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.example.account+json")
 	}
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
