@@ -8,5 +8,5 @@ go build
 ./goa-sandbox 
 ```
 
-# Api Reference
+# Reference
 https://goa.design/reference/goa/design/apidsl/#apidsl
